@@ -35,7 +35,20 @@
             <version>1.7.25</version>
             <!--<scope>test</scope>-->
         </dependency>
+        <!-- https://mvnrepository.com/artifact/gr.james/random-sampling -->
+        <!-- https://mvnrepository.com/artifact/gr.james/random-sampling -->
+        <dependency>
+            <groupId>gr.james</groupId>
+            <artifactId>random-sampling</artifactId>
+            <version>0.13</version>
+        </dependency>
 
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>james-repository</id>
+            <url>http://jcenter.bintray.com/</url>
+        </repository>
+    </repositories>
 </project>
