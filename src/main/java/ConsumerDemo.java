@@ -1,6 +1,3 @@
-import gr.james.sampling.RandomSampling;
-import gr.james.sampling.VitterXSampling;
-import gr.james.sampling.WatermanSampling;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -11,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.*;
-import java.util.stream.IntStream;
 
 public class ConsumerDemo {
     public static void main(String[] args) {
@@ -34,17 +30,14 @@ public class ConsumerDemo {
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(properties);
 
-
         // subscribe consumer to our topic(s)
-        // consumer.subscribe(Collections.singleton(topic));
         consumer.subscribe(Arrays.asList(topic));
 
-        consumeWithSampling(logger, consumer);
-        //consumeWithoutSampling(logger, consumer);
+        consumeMessages(logger, consumer);
 
     }
 
-    private static void consumeWithoutSampling(Logger logger, KafkaConsumer<String, String> consumer) {
+    private static void consumeMessages(Logger logger, KafkaConsumer<String, String> consumer) {
         int counter = 0;
         // poll for new data
         while(true){
@@ -66,45 +59,37 @@ public class ConsumerDemo {
         }
     }
 
-    private static void consumeWithSampling(Logger logger, KafkaConsumer<String, String> consumer) {
-        int counter = 0;
-        // poll for new data
-        while(true){
-            ConsumerRecords<String, String> records =
-                    consumer.poll(Duration.ofMillis(100)); // new in Kafka 2.0.0
-
-
-            /**** SAMPLING ****/
-
-            double samplePercentage = 0.3;
-            int currentSubStreamSize = records.count();
-
-            int numberOfSamplesForCurrentSubStream = (int)(samplePercentage*currentSubStreamSize);
-
-            if(numberOfSamplesForCurrentSubStream>0) {
-
-                RandomSampling<ConsumerRecord<String, String>> rs = new WatermanSampling<>(numberOfSamplesForCurrentSubStream, new Random());
-                //rs.feed(IntStream.rangeClosed(1, 100).boxed().iterator());
-                rs.feed(records.iterator());
-                Collection<ConsumerRecord<String, String>> sample = rs.sample();
-
-                for (ConsumerRecord<String, String> record : sample){
-                    counter++;
-                    String myString = record.value();
-
-                    String [] fields = myString.split(",");
-                    Value value = new Value(fields[0],fields[1], fields[2],fields[3],fields[4],fields[5],fields[6],fields[7]);
-
-                    //logger.info("Key: " + record.key() + ", Value: " + value.getLatitude() + value.getLongtitude() + " " + value.getInfo());
-                    //logger.info("Partition: " + record.partition() + ", Offset: " + record.offset());
-                    logger.info("[x" + counter +  ", y" + counter + "] " + "=" + value.getLatitude() + ", " + value.getLongtitude());
-
-                }
-            }
-
-
-        }
-
-
-    }
+//    private static void consumeWithSampling(Logger logger, KafkaConsumer<String, String> consumer) {
+//        int counter = 0;
+//        // poll for new data
+//        while(true){
+//            ConsumerRecords<String, String> records =
+//                    consumer.poll(Duration.ofMillis(100)); // new in Kafka 2.0.0
+//
+//            double samplePercentage = 0.3;
+//            int currentSubStreamSize = records.count();
+//
+//            int numberOfSamplesForCurrentSubStream = (int)(samplePercentage*currentSubStreamSize);
+//
+//            if(numberOfSamplesForCurrentSubStream>0) {
+//
+//                RandomSampling<ConsumerRecord<String, String>> rs = new WatermanSampling<>(numberOfSamplesForCurrentSubStream, new Random());
+//                //rs.feed(IntStream.rangeClosed(1, 100).boxed().iterator());
+//                rs.feed(records.iterator());
+//                Collection<ConsumerRecord<String, String>> sample = rs.sample();
+//
+//                for (ConsumerRecord<String, String> record : sample){
+//                    counter++;
+//                    String myString = record.value();
+//
+//                    String [] fields = myString.split(",");
+//                    Value value = new Value(fields[0],fields[1], fields[2],fields[3],fields[4],fields[5],fields[6],fields[7]);
+//
+//                    //logger.info("Key: " + record.key() + ", Value: " + value.getLatitude() + value.getLongtitude() + " " + value.getInfo());
+//                    //logger.info("Partition: " + record.partition() + ", Offset: " + record.offset());
+//                    logger.info("[x" + counter +  ", y" + counter + "] " + "=" + value.getLatitude().replaceAll("latitude=", "") + ", " + value.getLongtitude().replaceAll("longtitude=", "").replaceAll("}",""));
+//                }
+//            }
+//        }
+//    }
 }
