@@ -42,13 +42,27 @@
             <artifactId>random-sampling</artifactId>
             <version>0.13</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.knowm.xchart</groupId>
+            <artifactId>xchart</artifactId>
+            <version>3.5.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.knowm.xchart</groupId>
+            <artifactId>xchart</artifactId>
+            <version>3.5.5-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <repositories>
         <repository>
             <id>james-repository</id>
             <url>http://jcenter.bintray.com/</url>
+        </repository>
+        <repository>
+            <id>sonatype-oss-snapshot</id>
+            <snapshots/>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
     </repositories>
 </project>
