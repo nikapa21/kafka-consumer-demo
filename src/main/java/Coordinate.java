@@ -1,6 +1,9 @@
 import java.util.Objects;
 
 public class Coordinate {
+
+    final static int MAX_ALLOWED_DEVIATION = 1;
+
     double latitude;
     double longtitude;
 
@@ -44,11 +47,11 @@ public class Coordinate {
 //        System.out.println("Comparing " + thatLatAsInt + " with " + latitudeAsInt + " result is ");
 //        System.out.println("Comparing " + thatLonAsInt + " with " + longtitudeAsInt+ " result is ");
 
-        if (thatLatAsInt == thisLatitudeAsInt ) {
+        if (Math.abs(thatLatAsInt-thisLatitudeAsInt) > MAX_ALLOWED_DEVIATION) {
             compareLatitude = true;
         }
 
-        if (thatLonAsInt == thisLongtitudeAsInt) {
+        if (Math.abs(thatLonAsInt-thisLongtitudeAsInt) > MAX_ALLOWED_DEVIATION) {
             compareLongtitude = true;
         }
 
