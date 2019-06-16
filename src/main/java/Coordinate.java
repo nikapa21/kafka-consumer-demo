@@ -47,11 +47,11 @@ public class Coordinate {
 //        System.out.println("Comparing " + thatLatAsInt + " with " + latitudeAsInt + " result is ");
 //        System.out.println("Comparing " + thatLonAsInt + " with " + longtitudeAsInt+ " result is ");
 
-        if (Math.abs(thatLatAsInt-thisLatitudeAsInt) > MAX_ALLOWED_DEVIATION) {
+        if (Math.abs(thatLatAsInt-thisLatitudeAsInt) <= MAX_ALLOWED_DEVIATION) {
             compareLatitude = true;
         }
 
-        if (Math.abs(thatLonAsInt-thisLongtitudeAsInt) > MAX_ALLOWED_DEVIATION) {
+        if (Math.abs(thatLonAsInt-thisLongtitudeAsInt) <= MAX_ALLOWED_DEVIATION) {
             compareLongtitude = true;
         }
 

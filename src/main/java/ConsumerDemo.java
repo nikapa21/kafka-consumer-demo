@@ -26,8 +26,8 @@ import java.util.List;
 
 public class ConsumerDemo {
 
-    final static String RAW_DATA_TOPIC = "topic-10-raw-data";
-    final static String SAMPLED_DATA_TOPIC = "topic-10-sampled-data";
+    final static String RAW_DATA_TOPIC = "topic-raw-data";
+    final static String SAMPLED_DATA_TOPIC = "topic-sampled-data";
 
     public static void main(String[] args) {
 
@@ -61,8 +61,12 @@ public class ConsumerDemo {
 
     private static void consumeMessages(Logger logger, KafkaConsumer<String, String> consumer) throws IOException{
         int counter = 0;
-        HashSet<Coordinate> rawCoordinateHashSet = new HashSet<>();
-        Set<Coordinate> sampledCoordinateHashSet = new HashSet<>();
+        int alertCounter = 0;
+        int samplesOnRoute = 0;
+
+        Map<String, Set<Coordinate>> rawCoordinatesPerTopic = new HashMap<>();
+        Map<String, Set<Coordinate>> sampledCoordinatesPerTopic = new HashMap<>();
+
         boolean coordinateIsOnCorrectRoute = false;
 
 //        List<Double> xCoordinates = new ArrayList<>();
@@ -83,6 +87,8 @@ public class ConsumerDemo {
                 String [] fields = myValue.split(",");
                 Value value = new Value(fields[0],fields[1], fields[2],fields[3],fields[4],fields[5],fields[6],fields[7]);
 
+                System.out.println(value.getBuslineId());
+
                 String [] latitude = value.getLatitude().split("=");
                 double x = Double.parseDouble(latitude[1]);
 
@@ -92,19 +98,37 @@ public class ConsumerDemo {
                 Coordinate coordinate = new Coordinate(x, y);
 
                 if (myTopic.equals(RAW_DATA_TOPIC)) {
-                    rawCoordinateHashSet.add(coordinate);
-                }
-                else {
-                    sampledCoordinateHashSet.add(coordinate);
-                    coordinateIsOnCorrectRoute = rawCoordinateHashSet.stream().anyMatch(c -> c.equals(coordinate));
-
-                    if (coordinateIsOnCorrectRoute) {
-                        System.out.println("All good keep receiving sampled data");
+                    Set<Coordinate> raw = rawCoordinatesPerTopic.get(value.getBuslineId());
+                    if (raw == null) {
+                        raw = new HashSet<>();
+                        raw.add(coordinate);
+                        rawCoordinatesPerTopic.put(value.getBuslineId(), raw);
                     }
                     else {
-                        System.out.println("###############");
-                        System.out.println("ALERT!");
-                        System.out.println("###############");
+                        raw.add(coordinate);
+                    }
+                }
+                else {
+//                    Set<Coordinate> sampled = sampledCoordinatesPerTopic.get(value.getBuslineId());
+//                    if (sampled == null) {
+//                        sampled = new HashSet<>();
+//                        sampled.add(coordinate);
+//                        sampledCoordinatesPerTopic.put(value.getBuslineId(), sampled);
+//                    } else {
+//                        sampled.add(coordinate);
+//                    }
+                    if (rawCoordinatesPerTopic.get(value.getBuslineId()) == null) {
+                        System.out.println("pigame na paroume sampled gia to topic " + myTopic + " kati pou den exoume raw ");
+                    }
+                    else {
+                        coordinateIsOnCorrectRoute = rawCoordinatesPerTopic.get(value.getBuslineId()).stream().anyMatch(c -> c.equals(coordinate));
+
+                        if (coordinateIsOnCorrectRoute) {
+                            System.out.println("All good keep receiving sampled data. So far " + ++samplesOnRoute);
+                        } else {
+                            System.out.println("###############");
+                            System.out.println("ALERT! Alert count so far is " + ++alertCounter);
+                        }
                     }
                 }
 
