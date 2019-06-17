@@ -1,28 +1,13 @@
-import main.minigeo.MapWindow;
-import main.minigeo.POI;
-import main.minigeo.Point;
-import main.minigeo.Segment;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.knowm.xchart.BitmapEncoder;
-import org.knowm.xchart.QuickChart;
-import org.knowm.xchart.SwingWrapper;
-import org.knowm.xchart.XYChart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.Color;
 import java.io.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import java.awt.*;
 import java.time.Duration;
 import java.util.*;
-import java.util.List;
 
 public class ConsumerDemo {
 
@@ -68,10 +53,6 @@ public class ConsumerDemo {
         Map<String, Set<Coordinate>> sampledCoordinatesPerTopic = new HashMap<>();
 
         boolean coordinateIsOnCorrectRoute = false;
-
-//        List<Double> xCoordinates = new ArrayList<>();
-//        List<Double> yCoordinates = new ArrayList<>();
-        boolean flagRouteBigDataComing = true;
 
         // poll for new data
         while(true) {
