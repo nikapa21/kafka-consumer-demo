@@ -19,7 +19,7 @@ public class ConsumerDemo {
         Logger logger = LoggerFactory.getLogger(ConsumerDemo.class.getName());
 
         String bootstrapServers = "127.0.0.1:9092";
-        String groupId = "application-with-streams-topic-10";
+        String groupId = "application-with-sampling-all-topics";
 
         // create consumer configs
         Properties properties = new Properties();
@@ -68,7 +68,7 @@ public class ConsumerDemo {
                 String [] fields = myValue.split(",");
                 Value value = new Value(fields[0],fields[1], fields[2],fields[3],fields[4],fields[5],fields[6],fields[7]);
 
-                System.out.println(value.getBuslineId());
+//                logger.info(value.getBuslineId());
 
                 String [] latitude = value.getLatitude().split("=");
                 double x = Double.parseDouble(latitude[1]);
@@ -99,23 +99,23 @@ public class ConsumerDemo {
 //                        sampled.add(coordinate);
 //                    }
                     if (rawCoordinatesPerTopic.get(value.getBuslineId()) == null) {
-                        System.out.println("pigame na paroume sampled gia to topic " + myTopic + " kati pou den exoume raw ");
+//                        System.out.println("pigame na paroume sampled gia to topic " + myTopic + " kati pou den exoume raw ");
                     }
                     else {
                         coordinateIsOnCorrectRoute = rawCoordinatesPerTopic.get(value.getBuslineId()).stream().anyMatch(c -> c.equals(coordinate));
 
                         if (coordinateIsOnCorrectRoute) {
-                            System.out.println("All good keep receiving sampled data. So far " + ++samplesOnRoute);
+//                            logger.info("All good keep receiving sampled data. So far " + ++samplesOnRoute);
                         } else {
-                            System.out.println("###############");
-                            System.out.println("ALERT! Alert count so far is " + ++alertCounter);
+                            logger.info("###############");
+                            logger.info("ALERT found. Alert count so far is " + ++alertCounter);
                         }
                     }
                 }
 
                 //logger.info("Key: " + record.key() + ", Value: " + value.getLatitude() + value.getLongtitude() + " " + value.getInfo());
                 //logger.info("Partition: " + record.partition() + ", Offset: " + record.offset());
-                logger.info("[x" + counter +  ", y" + counter + "] " + "=" + value.getLatitude().replaceAll("latitude=", "") + ", " + value.getLongtitude().replaceAll("longtitude=", "").replaceAll("}",""));
+//                logger.info("[x" + counter +  ", y" + counter + "] " + "=" + value.getLatitude().replaceAll("latitude=", "") + ", " + value.getLongtitude().replaceAll("longtitude=", "").replaceAll("}",""));
                 //logger.info(counter + ":" + value.toString());
 
             }
