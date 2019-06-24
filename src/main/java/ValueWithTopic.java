@@ -1,18 +1,29 @@
 import java.io.Serializable;
 
-public class Value implements Serializable {
+public class ValueWithTopic implements Serializable {
     //private Bus bus;
-    private String id;
+    private int id;
     private String lineNumber;
     private String routeCode;
     private String vehicleId;
     private String lineName;
     private String buslineId;
     private String info;
-    private String latitude;
-    private String longtitude;
+    private double latitude;
+    private double longtitude;
 
-    public Value(String id, String lineNumber, String routeCode, String vehicleId, String lineName, String buslineId, String info, String latitude, String longtitude) {
+    public ValueWithTopic(String lineNumber, String routeCode, String vehicleId, String lineName, String buslineId, String info, double latitude, double longtitude) {
+        this.lineNumber = lineNumber;
+        this.routeCode = routeCode;
+        this.vehicleId = vehicleId;
+        this.lineName = lineName;
+        this.buslineId = buslineId;
+        this.info = info;
+        this.latitude = latitude;
+        this.longtitude = longtitude;
+    }
+
+    public ValueWithTopic(int id, String lineNumber, String routeCode, String vehicleId, String lineName, String buslineId, String info, double latitude, double longtitude) {
         this.id = id;
         this.lineNumber = lineNumber;
         this.routeCode = routeCode;
@@ -24,17 +35,11 @@ public class Value implements Serializable {
         this.longtitude = longtitude;
     }
 
-    public Value(String x, String y, String timestamp) {
-        this.latitude = latitude;
-        this.longtitude = longtitude;
-        this.info = info;
-    }
-
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -86,34 +91,34 @@ public class Value implements Serializable {
         this.info = info;
     }
 
-    public String getLatitude() {
+    public double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(String latitude) {
+    public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
-    public String getLongtitude() {
+    public double getLongtitude() {
         return longtitude;
     }
 
-    public void setLongtitude(String longtitude) {
+    public void setLongtitude(double longtitude) {
         this.longtitude = longtitude;
     }
 
     @Override
     public String toString() {
         return "Value{" +
-                "id='" + id + '\'' +
+                "id=" + id +
                 ", lineNumber='" + lineNumber + '\'' +
                 ", routeCode='" + routeCode + '\'' +
                 ", vehicleId='" + vehicleId + '\'' +
                 ", lineName='" + lineName + '\'' +
                 ", buslineId='" + buslineId + '\'' +
                 ", info='" + info + '\'' +
-                ", latitude='" + latitude + '\'' +
-                ", longtitude='" + longtitude + '\'' +
+                ", latitude=" + latitude +
+                ", longtitude=" + longtitude +
                 '}';
     }
 }

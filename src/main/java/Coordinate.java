@@ -6,10 +6,17 @@ public class Coordinate {
 
     double latitude;
     double longtitude;
+    String timestamp;
 
-    public Coordinate(Double latitude, Double longtitude) {
+    public Coordinate(Double latitude, Double longtitude, String timestamp) {
         this.latitude = latitude;
         this.longtitude = longtitude;
+        this.timestamp = timestamp;
+    }
+
+    public Coordinate(double x, double y) {
+        this.latitude = x;
+        this.longtitude = y;
     }
 
     public double getLatitude() {

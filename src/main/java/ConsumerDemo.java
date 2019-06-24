@@ -6,6 +6,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
 
@@ -14,11 +15,12 @@ public class ConsumerDemo {
     final static String RAW_DATA_TOPIC = "topic-raw-data";
     final static String SAMPLED_DATA_TOPIC = "topic-sampled-data";
 
+
     public static void main(String[] args) {
 
         Logger logger = LoggerFactory.getLogger(ConsumerDemo.class.getName());
 
-        String bootstrapServers = "127.0.0.1:9092";
+        String bootstrapServers = "127.0.0.1:9090, 127.0.0.1:9091, 127.0.0.1:9092, 127.0.0.1:9093";
         String groupId = "application-with-sampling-all-topics";
 
         // create consumer configs
@@ -30,7 +32,6 @@ public class ConsumerDemo {
         properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         // create a consumer
-
         KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(properties);
 
         // subscribe consumer to our topic(s)
@@ -45,80 +46,66 @@ public class ConsumerDemo {
     }
 
     private static void consumeMessages(Logger logger, KafkaConsumer<String, String> consumer) throws IOException{
-        int counter = 0;
-        int alertCounter = 0;
-        int samplesOnRoute = 0;
 
-        Map<String, Set<Coordinate>> rawCoordinatesPerTopic = new HashMap<>();
-        Map<String, Set<Coordinate>> sampledCoordinatesPerTopic = new HashMap<>();
+        Output output = new Output(0, 0, 0, new ArrayList<>());
 
-        boolean coordinateIsOnCorrectRoute = false;
+        Map<String, List<BusPosition>> rawCoordinatesPerBusLine = new HashMap<>();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM  d yyyy hh:mm:ss:000a");
+        Boolean stillProcessing = true;
+        Boolean hasProcessed = false;
+        long startProcessingMillis = System.currentTimeMillis();
 
         // poll for new data
-        while(true) {
+        while(stillProcessing) {
             ConsumerRecords<String, String> records =
-                    consumer.poll(Duration.ofMillis(7000000)); // new in Kafka 2.0.0
-            //System.out.println("Polling! ");
+                    consumer.poll(Duration.ofMillis(2000));
 
             for (ConsumerRecord<String, String> record : records){
+                startProcessingMillis = System.currentTimeMillis();
                 String myTopic = record.topic();
                 String myValue = record.value();
-                counter++;
 
                 String [] fields = myValue.split(",");
-                Value value = new Value(fields[0],fields[1], fields[2],fields[3],fields[4],fields[5],fields[6],fields[7]);
+                Value value = new Value(fields[0], fields[1], fields[2],fields[3],fields[4],fields[5],fields[6],fields[7], fields[8]);
+                String busLineId = value.getBuslineId();
 
-//                logger.info(value.getBuslineId());
-
-                String [] latitude = value.getLatitude().split("=");
-                double x = Double.parseDouble(latitude[1]);
-
-                String [] longtitude = value.getLongtitude().split("=");
-                double y = Double.parseDouble(longtitude[1].replaceAll("}",""));
-
-                Coordinate coordinate = new Coordinate(x, y);
+                BusPosition busPosition = getBusPositionFromValue(value);
 
                 if (myTopic.equals(RAW_DATA_TOPIC)) {
-                    Set<Coordinate> raw = rawCoordinatesPerTopic.get(value.getBuslineId());
-                    if (raw == null) {
-                        raw = new HashSet<>();
-                        raw.add(coordinate);
-                        rawCoordinatesPerTopic.put(value.getBuslineId(), raw);
-                    }
-                    else {
-                        raw.add(coordinate);
-                    }
+                    Util.initializeRawDataPerBusLine(output, rawCoordinatesPerBusLine, busLineId, busPosition);
                 }
                 else {
-//                    Set<Coordinate> sampled = sampledCoordinatesPerTopic.get(value.getBuslineId());
-//                    if (sampled == null) {
-//                        sampled = new HashSet<>();
-//                        sampled.add(coordinate);
-//                        sampledCoordinatesPerTopic.put(value.getBuslineId(), sampled);
-//                    } else {
-//                        sampled.add(coordinate);
-//                    }
-                    if (rawCoordinatesPerTopic.get(value.getBuslineId()) == null) {
-//                        System.out.println("pigame na paroume sampled gia to topic " + myTopic + " kati pou den exoume raw ");
+                    if (rawCoordinatesPerBusLine.get(busLineId) == null) {
+                        logger.info("pigame na paroume sampled gia to topic " + myTopic + " kati pou den exoume raw ");
                     }
                     else {
-                        coordinateIsOnCorrectRoute = rawCoordinatesPerTopic.get(value.getBuslineId()).stream().anyMatch(c -> c.equals(coordinate));
-
-                        if (coordinateIsOnCorrectRoute) {
-//                            logger.info("All good keep receiving sampled data. So far " + ++samplesOnRoute);
-                        } else {
-                            logger.info("###############");
-                            logger.info("ALERT found. Alert count so far is " + ++alertCounter);
-                        }
+                        hasProcessed = Util.processSampledData(logger, output, rawCoordinatesPerBusLine, dateFormat, busLineId, busPosition);
                     }
                 }
-
-                //logger.info("Key: " + record.key() + ", Value: " + value.getLatitude() + value.getLongtitude() + " " + value.getInfo());
-                //logger.info("Partition: " + record.partition() + ", Offset: " + record.offset());
-//                logger.info("[x" + counter +  ", y" + counter + "] " + "=" + value.getLatitude().replaceAll("latitude=", "") + ", " + value.getLongtitude().replaceAll("longtitude=", "").replaceAll("}",""));
-                //logger.info(counter + ":" + value.toString());
-
             }
+            stillProcessing = Util.checkIfStillProcessing(hasProcessed, startProcessingMillis);
         }
+        Util.printStats(output);
+    }
+
+
+
+    private static BusPosition getBusPositionFromValue(Value value) {
+        String [] latitude = value.getLatitude().split("=");
+        double x = Double.parseDouble(latitude[1]);
+
+        String [] longtitude = value.getLongtitude().split("=");
+        double y = Double.parseDouble(longtitude[1].replaceAll("}",""));
+
+        String [] ids = value.getId().split("=");
+        int id = Integer.parseInt(ids[1]);
+
+        return new BusPosition(id, value.getLineNumber(), value.getRouteCode(), value.getVehicleId(), x, y, value.getInfo());
     }
 }
+
+//logger.info("Key: " + record.key() + ", Value: " + value.getLatitude() + value.getLongtitude() + " " + value.getInfo());
+//logger.info("Partition: " + record.partition() + ", Offset: " + record.offset());
+//logger.info("[x" + counter +  ", y" + counter + "] " + "=" + value.getLatitude().replaceAll("latitude=", "") + ", " + value.getLongtitude().replaceAll("longtitude=", "").replaceAll("}",""));
+//logger.info(counter + ":" + value.toString());
+//logger.info("[x" + counter +  ", y" + counter + "] " + "=" + value.getLatitude().replaceAll("latitude=", "") + ", " + value.getLongtitude().replaceAll("longtitude=", "").replaceAll("}",""));
