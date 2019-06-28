@@ -206,7 +206,6 @@ public class CheckAlertDemo {
     }
 
     private static BusPosition findNext(BusPosition stigma, List<BusPosition> stigmata) {
-        // TODO to mono provlima edw einai o XRONOS
         for(BusPosition busPosition : stigmata.subList(stigmata.indexOf(stigma)+1, stigmata.size())) {
             if (busPosition.getRouteCode().equals(stigma.getRouteCode()) && busPosition.getVehicleId().equals(stigma.getVehicleId())) {
                 return busPosition;
