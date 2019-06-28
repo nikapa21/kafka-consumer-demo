@@ -1,3 +1,5 @@
+import java.util.Objects;
+
 public class BusPosition {
 
     final static int MAX_ALLOWED_DEVIATION = 2;
@@ -110,6 +112,25 @@ public class BusPosition {
         boolean routeIsTheSame = that.routeCode.equals(this.routeCode);
 
         return  compareLatitude && compareLongtitude && routeIsTheSame;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BusPosition that = (BusPosition) o;
+        return id == that.id &&
+                Double.compare(that.latitude, latitude) == 0 &&
+                Double.compare(that.longtitude, longtitude) == 0 &&
+                Objects.equals(lineCode, that.lineCode) &&
+                Objects.equals(routeCode, that.routeCode) &&
+                Objects.equals(vehicleId, that.vehicleId) &&
+                Objects.equals(timeStampOfBusPosition, that.timeStampOfBusPosition);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, lineCode, routeCode, vehicleId, latitude, longtitude, timeStampOfBusPosition);
     }
 
     @Override
